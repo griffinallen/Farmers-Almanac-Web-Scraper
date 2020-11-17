@@ -2,6 +2,8 @@ from urllib.request import Request, urlopen
 from bs4 import BeautifulSoup, SoupStrainer
 from urllib.error import HTTPError
 import datetime
+import sys
+import time
 from calendar import monthrange
 
 
@@ -12,6 +14,7 @@ warmest_year=0
 warmest_month=0
 warmest_day=0
 function = 0
+
 
 
 
@@ -34,7 +37,6 @@ def find_warmest_day(year, month, day, page):
     global warmest_day
     global warmest_month
     global warmest_year
-    print(warmest_day_temp) 
     if (temp>warmest_day_temp):
         warmest_day_temp = temp
         warmest_day = day
@@ -42,16 +44,23 @@ def find_warmest_day(year, month, day, page):
         warmest_year = year
 
 def loopDays(year, month, startDay, endDay):
-    for day in range(startDay, endDay):
+    day = startDay
+    while (day<endDay+1):
         try:
             url = baseurl + str(year) + "-" + str(month) + "-" + str(day)
             req = Request(url, headers={"User-Agent": "Mozilla/5.0"})
             page = urlopen(req).read()
         except HTTPError:
             print ("You requested too many items in a short timeframe, please wait.")
+            time.sleep(10)
         else:
             if (function==1):
-                find_warmest_day(year, month, day, page)
+                try:
+                    find_warmest_day(year, month, day, page) 
+                except TypeError:
+                    print ("The date range you inputted is not valid or the Farmer's Almanac has not been updated to include all dates in your range.")
+            day += 1
+                    
             
                     
                         
@@ -102,12 +111,26 @@ def loopYears(startYear, startMonth, startDay, endYear, endMonth, endDay):
 
 
 
-    
 
 function = 1
-loopYears(2020, 10, 28, 2020, 11, 16)
-d = datetime.datetime.strptime(str(warmest_year) + '-' + str(warmest_month) + '-' + str(warmest_day), '%Y-%m-%d')
-print("the warmest day was " + d.strftime('%b %d, %Y') + " with a temperature of " + str(warmest_day_temp) + "°C")
+startYear = 2020
+startMonth = 9
+startDay = 28
+endYear = 2020
+endMonth = 11
+endDay = 16
+
+
+loopYears(startYear, startMonth, startDay, endYear, endMonth, endDay)
+
+
+
+
+startDayFormatted = datetime.datetime.strptime(str(startYear) + '-' + str(startMonth) + '-' + str(startDay), '%Y-%m-%d')
+endDayFormatted = datetime.datetime.strptime(str(endYear) + '-' + str(endMonth) + '-' + str(endDay), '%Y-%m-%d')
+formattedDay = datetime.datetime.strptime(str(warmest_year) + '-' + str(warmest_month) + '-' + str(warmest_day), '%Y-%m-%d')
+
+print("The warmest day between " + startDayFormatted.strftime('%b %d, %Y') + " and " + endDayFormatted.strftime('%b %d, %Y') + " was " + formattedDay.strftime('%b %d, %Y') + " with a temperature of " + str(warmest_day_temp) + "°C")
 
 #dataSections = soup.findAll("tr","weatherhistory_results_datavalue")
 #for section in dataSections:
