@@ -45,6 +45,7 @@ def find_warmest_day(year, month, day, page):
 
 def loopDays(year, month, startDay, endDay):
     day = startDay
+    wait_times = 0
     while (day<endDay+1):
         try:
             url = baseurl + str(year) + "-" + str(month) + "-" + str(day)
@@ -52,13 +53,17 @@ def loopDays(year, month, startDay, endDay):
             page = urlopen(req).read()
         except HTTPError:
             print ("You requested too many items in a short timeframe, please wait.")
-            time.sleep(10)
+            if (wait_times>=5):
+                exit()
+            time.sleep(5)
+            wait_times+=1
         else:
             if (function==1):
                 try:
                     find_warmest_day(year, month, day, page) 
                 except TypeError:
-                    print ("The date range you inputted is not valid or the Farmer's Almanac has not been updated to include all dates in your range.")
+                    d = datetime.datetime.strptime(str(year) + '-' + str(month) + '-' + str(day), '%Y-%m-%d')
+                    print (d.strftime('%b %d, %Y') + " is not valid or the Farmer's Almanac has not been updated to include it yet.")
             day += 1
                     
             
@@ -110,12 +115,16 @@ def loopYears(startYear, startMonth, startDay, endYear, endMonth, endDay):
                 loopMonths(year, 1, startDay, 12, endDay)
 
 
+postal_code = input("Enter your postal code (ex: L2P 1L4): ").replace(" ", "%20")
+print("Here are the list of functions:")
+print("(1) Warmest day in date range")
 
+function = input("choose your function: ")
 
 function = 1
 startYear = 2020
-startMonth = 9
-startDay = 28
+startMonth = 11
+startDay = 5
 endYear = 2020
 endMonth = 11
 endDay = 16
